@@ -54,6 +54,8 @@ public class MainApp extends Application {
 
     private static Context mContext;
 
+    private static String __triiuark_data_folder;
+
     // TODO Enable when "On Device" is recovered?
     // TODO better place
     // private static boolean mOnlyOnDevice = false;
@@ -168,7 +170,30 @@ public class MainApp extends Application {
      
     //  data_folder
     public static String getDataFolder() {
-        return getAppContext().getResources().getString(R.string.data_folder);
+        if (__triiuark_data_folder != null) {
+            return __triiuark_data_folder;
+        }
+
+        __triiuark_data_folder = getAppContext().getResources().getString(R.string.data_folder);
+
+        // All Secondary SD-CARDs (all exclude primary) separated by ":"
+        String[] parts = System.getenv("SECONDARY_STORAGE").split(":");
+        if (parts.length > 0) {
+            String secondaryStorageDirectory = parts[0];
+
+            parts = android.os.Environment.getExternalStorageDirectory().toString().split("/");
+            for (int ii = 0; ii < parts.length; ++ii) {
+                secondaryStorageDirectory = "../" + secondaryStorageDirectory;
+            }
+            secondaryStorageDirectory = secondaryStorageDirectory.replaceAll("//", "/");
+            java.io.File toTest = new java.io.File(secondaryStorageDirectory);
+            if (toTest.exists() && toTest.isDirectory()) {
+                __triiuark_data_folder = secondaryStorageDirectory + "/" + __triiuark_data_folder;
+                //android.util.Log.d("FOO", __triiuark_data_folder);
+            }
+        }
+
+        return __triiuark_data_folder;
     }
     
     // log_name
